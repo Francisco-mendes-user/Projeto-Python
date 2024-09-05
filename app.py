@@ -714,3 +714,139 @@ def deletar_tipo_pessoa(id):
     db.session.delete(tipo_pessoa)
     db.session.commit()
     return jsonify({'message': 'Tipo de pessoa deletado com sucesso!'})
+
+
+    
+# Seção de listagem,criação,excluir e atualizar da tabela de pessoa tipo
+@app.route('/pessoa_tipo', methods=['GET'])
+def listar_pessoa_tipo():
+    """
+    Lista todos os relacionamentos entre pessoas e tipos
+    ---
+    responses:
+      200:
+        description: Lista de relacionamentos entre pessoas e tipos
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              pessoa_id:
+                type: integer
+              tipo_id:
+                type: integer
+              data_inicio:
+                type: string
+                format: date
+              data_fim:
+                type: string
+                format: date
+    """
+    pessoa_tipos = PessoaTipo.query.all()
+    return jsonify([{
+        'id': pt.id,
+        'pessoa_id': pt.pessoa_id,
+        'tipo_id': pt.tipo_id,
+        'data_inicio': pt.data_inicio,
+        'data_fim': pt.data_fim
+    } for pt in pessoa_tipos])
+
+@app.route('/pessoa_tipo', methods=['POST'])
+def criar_pessoa_tipo():
+    """
+    Cria um novo relacionamento entre pessoa e tipo
+    ---
+    parameters:
+      - name: pessoa_tipo
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            pessoa_id:
+              type: integer
+            tipo_id:
+              type: integer
+            data_inicio:
+              type: string
+              format: date
+            data_fim:
+              type: string
+              format: date
+    responses:
+      201:
+        description: Relacionamento entre pessoa e tipo criado com sucesso
+    """
+    dados = request.get_json()
+    novo_pessoa_tipo = PessoaTipo(
+        pessoa_id=dados['pessoa_id'],
+        tipo_id=dados['tipo_id'],
+        data_inicio=dados.get('data_inicio'),
+        data_fim=dados.get('data_fim')
+    )
+    db.session.add(novo_pessoa_tipo)
+    db.session.commit()
+    return jsonify({'message': 'Relacionamento entre pessoa e tipo criado com sucesso!'}), 201
+
+@app.route('/pessoa_tipo/<int:id>', methods=['PUT'])
+def atualizar_pessoa_tipo(id):
+    """
+    Atualiza um relacionamento entre pessoa e tipo existente
+    ---
+    parameters:
+      - name: id
+        in: path
+        type: integer
+        required: true
+      - name: pessoa_tipo
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            pessoa_id:
+              type: integer
+            tipo_id:
+              type: integer
+            data_inicio:
+              type: string
+              format: date
+            data_fim:
+              type: string
+              format: date
+    responses:
+      200:
+        description: Relacionamento entre pessoa e tipo atualizado com sucesso
+    """
+    pessoa_tipo = PessoaTipo.query.get_or_404(id)
+    dados = request.get_json()
+    pessoa_tipo.pessoa_id = dados.get('pessoa_id', pessoa_tipo.pessoa_id)
+    pessoa_tipo.tipo_id = dados.get('tipo_id', pessoa_tipo.tipo_id)
+    pessoa_tipo.data_inicio = dados.get('data_inicio', pessoa_tipo.data_inicio)
+    pessoa_tipo.data_fim = dados.get('data_fim', pessoa_tipo.data_fim)
+    db.session.commit()
+    return jsonify({'message': 'Relacionamento entre pessoa e tipo atualizado com sucesso!'})
+
+@app.route('/pessoa_tipo/<int:id>', methods=['DELETE'])
+def deletar_pessoa_tipo(id):
+    """
+    Deleta um relacionamento entre pessoa e tipo
+    ---
+    parameters:
+      - name: id
+        in: path
+        type: integer
+        required: true
+    responses:
+      200:
+        description: Relacionamento entre pessoa e tipo deletado com sucesso
+    """
+    pessoa_tipo = PessoaTipo.query.get_or_404(id)
+    db.session.delete(pessoa_tipo)
+    db.session.commit()
+    return jsonify({'message': 'Relacionamento entre pessoa e tipo deletado com sucesso!'})
+
+if __name__ == '__main__':
+    app.run(debug=True)
