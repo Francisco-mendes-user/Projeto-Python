@@ -617,3 +617,100 @@ def deletar_pessoa(id):
     db.session.delete(pessoa)
     db.session.commit()
     return jsonify({'message': 'Pessoa deletada com sucesso!'})
+
+    
+# Seção de listagem,criação,excluir e atualizar da tabela de Tipo de pessoas
+@app.route('/tipos_de_pessoas', methods=['GET'])
+def listar_tipos_de_pessoas():
+    """
+    Lista todos os tipos de pessoas
+    ---
+    responses:
+      200:
+        description: Lista de tipos de pessoas
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              tipo:
+                type: string
+    """
+    tipos_de_pessoas = TipoPessoa.query.all()
+    return jsonify([{
+        'id': t.id,
+        'tipo': t.tipo
+    } for t in tipos_de_pessoas])
+
+@app.route('/tipos_de_pessoas', methods=['POST'])
+def criar_tipo_pessoa():
+    """
+    Cria um novo tipo de pessoa
+    ---
+    parameters:
+      - name: tipo_pessoa
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            tipo:
+              type: string
+    responses:
+      201:
+        description: Tipo de pessoa criado com sucesso
+    """
+    dados = request.get_json()
+    novo_tipo_pessoa = TipoPessoa(tipo=dados['tipo'])
+    db.session.add(novo_tipo_pessoa)
+    db.session.commit()
+    return jsonify({'message': 'Tipo de pessoa criado com sucesso!'}), 201
+
+@app.route('/tipos_de_pessoas/<int:id>', methods=['PUT'])
+def atualizar_tipo_pessoa(id):
+    """
+    Atualiza um tipo de pessoa existente
+    ---
+    parameters:
+      - name: id
+        in: path
+        type: integer
+        required: true
+      - name: tipo_pessoa
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            tipo:
+              type: string
+    responses:
+      200:
+        description: Tipo de pessoa atualizado com sucesso
+    """
+    tipo_pessoa = TipoPessoa.query.get_or_404(id)
+    dados = request.get_json()
+    tipo_pessoa.tipo = dados.get('tipo', tipo_pessoa.tipo)
+    db.session.commit()
+    return jsonify({'message': 'Tipo de pessoa atualizado com sucesso!'})
+
+@app.route('/tipos_de_pessoas/<int:id>', methods=['DELETE'])
+def deletar_tipo_pessoa(id):
+    """
+    Deleta um tipo de pessoa
+    ---
+    parameters:
+      - name: id
+        in: path
+        type: integer
+        required: true
+    responses:
+      200:
+        description: Tipo de pessoa deletado com sucesso
+    """
+    tipo_pessoa = TipoPessoa.query.get_or_404(id)
+    db.session.delete(tipo_pessoa)
+    db.session.commit()
+    return jsonify({'message': 'Tipo de pessoa deletado com sucesso!'})
