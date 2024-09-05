@@ -340,3 +340,141 @@ def deletar_aposentado(id):
     db.session.delete(aposentado)
     db.session.commit()
     return jsonify({'message': 'Aposentado deletado com sucesso!'})
+
+
+# Seção de listagem,criação,excluir e atualizar da tabela de beneficiarios
+@app.route('/beneficiarios', methods=['GET'])
+def listar_beneficiarios():
+    """
+    Lista todos os beneficiários
+    ---
+    responses:
+      200:
+        description: Lista de beneficiários
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              nome:
+                type: string
+              cpf:
+                type: string
+              data_nascimento:
+                type: string
+                format: date
+              email:
+                type: string
+              telefone:
+                type: string
+    """
+    beneficiarios = Beneficiario.query.all()
+    return jsonify([{
+        'id': b.id,
+        'nome': b.nome,
+        'cpf': b.cpf,
+        'data_nascimento': b.data_nascimento,
+        'email': b.email,
+        'telefone': b.telefone
+    } for b in beneficiarios])
+
+@app.route('/beneficiarios', methods=['POST'])
+def criar_beneficiario():
+    """
+    Cria um novo beneficiário
+    ---
+    parameters:
+      - name: beneficiario
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            nome:
+              type: string
+            cpf:
+              type: string
+            data_nascimento:
+              type: string
+              format: date
+            email:
+              type: string
+            telefone:
+              type: string
+    responses:
+      201:
+        description: Beneficiário criado com sucesso
+    """
+    dados = request.get_json()
+    novo_beneficiario = Beneficiario(
+        nome=dados['nome'],
+        cpf=dados.get('cpf'),
+        data_nascimento=dados.get('data_nascimento'),
+        email=dados.get('email'),
+        telefone=dados.get('telefone')
+    )
+    db.session.add(novo_beneficiario)
+    db.session.commit()
+    return jsonify({'message': 'Beneficiário criado com sucesso!'}), 201
+
+@app.route('/beneficiarios/<int:id>', methods=['PUT'])
+def atualizar_beneficiario(id):
+    """
+    Atualiza um beneficiário existente
+    ---
+    parameters:
+      - name: id
+        in: path
+        type: integer
+        required: true
+      - name: beneficiario
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            nome:
+              type: string
+            cpf:
+              type: string
+            data_nascimento:
+              type: string
+              format: date
+            email:
+              type: string
+            telefone:
+              type: string
+    responses:
+      200:
+        description: Beneficiário atualizado com sucesso
+    """
+    beneficiario = Beneficiario.query.get_or_404(id)
+    dados = request.get_json()
+    beneficiario.nome = dados.get('nome', beneficiario.nome)
+    beneficiario.cpf = dados.get('cpf', beneficiario.cpf)
+    beneficiario.data_nascimento = dados.get('data_nascimento', beneficiario.data_nascimento)
+    beneficiario.email = dados.get('email', beneficiario.email)
+    beneficiario.telefone = dados.get('telefone', beneficiario.telefone)
+    db.session.commit()
+    return jsonify({'message': 'Beneficiário atualizado com sucesso!'})
+
+@app.route('/beneficiarios/<int:id>', methods=['DELETE'])
+def deletar_beneficiario(id):
+    """
+    Deleta um beneficiário
+    ---
+    parameters:
+      - name: id
+        in: path
+        type: integer
+        required: true
+    responses:
+      200:
+        description: Beneficiário deletado com sucesso
+    """
+    beneficiario = Beneficiario.query.get_or_404(id)
+    db.session.delete(beneficiario)
+    db.session.commit()
+    return jsonify({'message': 'Beneficiário deletado com sucesso!'})
