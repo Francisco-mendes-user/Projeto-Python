@@ -478,3 +478,142 @@ def deletar_beneficiario(id):
     db.session.delete(beneficiario)
     db.session.commit()
     return jsonify({'message': 'Beneficiário deletado com sucesso!'})
+
+
+    
+# Seção de listagem,criação,excluir e atualizar da tabela de pessoas
+@app.route('/pessoas', methods=['GET'])
+def listar_pessoas():
+    """
+    Lista todas as pessoas
+    ---
+    responses:
+      200:
+        description: Lista de pessoas
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              nome:
+                type: string
+              cpf:
+                type: string
+              data_nascimento:
+                type: string
+                format: date
+              email:
+                type: string
+              telefone:
+                type: string
+    """
+    pessoas = Pessoa.query.all()
+    return jsonify([{
+        'id': p.id,
+        'nome': p.nome,
+        'cpf': p.cpf,
+        'data_nascimento': p.data_nascimento,
+        'email': p.email,
+        'telefone': p.telefone
+    } for p in pessoas])
+
+@app.route('/pessoas', methods=['POST'])
+def criar_pessoa():
+    """
+    Cria uma nova pessoa
+    ---
+    parameters:
+      - name: pessoa
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            nome:
+              type: string
+            cpf:
+              type: string
+            data_nascimento:
+              type: string
+              format: date
+            email:
+              type: string
+            telefone:
+              type: string
+    responses:
+      201:
+        description: Pessoa criada com sucesso
+    """
+    dados = request.get_json()
+    nova_pessoa = Pessoa(
+        nome=dados['nome'],
+        cpf=dados.get('cpf'),
+        data_nascimento=dados.get('data_nascimento'),
+        email=dados.get('email'),
+        telefone=dados.get('telefone')
+    )
+    db.session.add(nova_pessoa)
+    db.session.commit()
+    return jsonify({'message': 'Pessoa criada com sucesso!'}), 201
+
+@app.route('/pessoas/<int:id>', methods=['PUT'])
+def atualizar_pessoa(id):
+    """
+    Atualiza uma pessoa existente
+    ---
+    parameters:
+      - name: id
+        in: path
+        type: integer
+        required: true
+      - name: pessoa
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            nome:
+              type: string
+            cpf:
+              type: string
+            data_nascimento:
+              type: string
+              format: date
+            email:
+              type: string
+            telefone:
+              type: string
+    responses:
+      200:
+        description: Pessoa atualizada com sucesso
+    """
+    pessoa = Pessoa.query.get_or_404(id)
+    dados = request.get_json()
+    pessoa.nome = dados.get('nome', pessoa.nome)
+    pessoa.cpf = dados.get('cpf', pessoa.cpf)
+    pessoa.data_nascimento = dados.get('data_nascimento', pessoa.data_nascimento)
+    pessoa.email = dados.get('email', pessoa.email)
+    pessoa.telefone = dados.get('telefone', pessoa.telefone)
+    db.session.commit()
+    return jsonify({'message': 'Pessoa atualizada com sucesso!'})
+
+@app.route('/pessoas/<int:id>', methods=['DELETE'])
+def deletar_pessoa(id):
+    """
+    Deleta uma pessoa
+    ---
+    parameters:
+      - name: id
+        in: path
+        type: integer
+        required: true
+    responses:
+      200:
+        description: Pessoa deletada com sucesso
+    """
+    pessoa = Pessoa.query.get_or_404(id)
+    db.session.delete(pessoa)
+    db.session.commit()
+    return jsonify({'message': 'Pessoa deletada com sucesso!'})
