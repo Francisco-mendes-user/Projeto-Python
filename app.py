@@ -202,3 +202,141 @@ def deletar_servidor(id):
     db.session.delete(servidor)
     db.session.commit()
     return jsonify({'message': 'Servidor deletado com sucesso!'})
+
+
+# Seção de listagem,criação,excluir e atualizar da tabela de aposentados
+@app.route('/aposentados', methods=['GET'])
+def listar_aposentados():
+    """
+    Lista todos os aposentados
+    ---
+    responses:
+      200:
+        description: Lista de aposentados
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              nome:
+                type: string
+              cargo:
+                type: string
+              data_aposentadoria:
+                type: string
+                format: date
+              email:
+                type: string
+              telefone:
+                type: string
+    """
+    aposentados = Aposentado.query.all()
+    return jsonify([{
+        'id': a.id,
+        'nome': a.nome,
+        'cargo': a.cargo,
+        'data_aposentadoria': a.data_aposentadoria,
+        'email': a.email,
+        'telefone': a.telefone
+    } for a in aposentados])
+
+@app.route('/aposentados', methods=['POST'])
+def criar_aposentado():
+    """
+    Cria um novo aposentado
+    ---
+    parameters:
+      - name: aposentado
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            nome:
+              type: string
+            cargo:
+              type: string
+            data_aposentadoria:
+              type: string
+              format: date
+            email:
+              type: string
+            telefone:
+              type: string
+    responses:
+      201:
+        description: Aposentado criado com sucesso
+    """
+    dados = request.get_json()
+    novo_aposentado = Aposentado(
+        nome=dados['nome'],
+        cargo=dados.get('cargo'),
+        data_aposentadoria=dados.get('data_aposentadoria'),
+        email=dados.get('email'),
+        telefone=dados.get('telefone')
+    )
+    db.session.add(novo_aposentado)
+    db.session.commit()
+    return jsonify({'message': 'Aposentado criado com sucesso!'}), 201
+
+@app.route('/aposentados/<int:id>', methods=['PUT'])
+def atualizar_aposentado(id):
+    """
+    Atualiza um aposentado existente
+    ---
+    parameters:
+      - name: id
+        in: path
+        type: integer
+        required: true
+      - name: aposentado
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            nome:
+              type: string
+            cargo:
+              type: string
+            data_aposentadoria:
+              type: string
+              format: date
+            email:
+              type: string
+            telefone:
+              type: string
+    responses:
+      200:
+        description: Aposentado atualizado com sucesso
+    """
+    aposentado = Aposentado.query.get_or_404(id)
+    dados = request.get_json()
+    aposentado.nome = dados.get('nome', aposentado.nome)
+    aposentado.cargo = dados.get('cargo', aposentado.cargo)
+    aposentado.data_aposentadoria = dados.get('data_aposentadoria', aposentado.data_aposentadoria)
+    aposentado.email = dados.get('email', aposentado.email)
+    aposentado.telefone = dados.get('telefone', aposentado.telefone)
+    db.session.commit()
+    return jsonify({'message': 'Aposentado atualizado com sucesso!'})
+
+@app.route('/aposentados/<int:id>', methods=['DELETE'])
+def deletar_aposentado(id):
+    """
+    Deleta um aposentado
+    ---
+    parameters:
+      - name: id
+        in: path
+        type: integer
+        required: true
+    responses:
+      200:
+        description: Aposentado deletado com sucesso
+    """
+    aposentado = Aposentado.query.get_or_404(id)
+    db.session.delete(aposentado)
+    db.session.commit()
+    return jsonify({'message': 'Aposentado deletado com sucesso!'})
